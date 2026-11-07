@@ -1,0 +1,148 @@
+GET /products/1
+  -> 200 OK
+{
+  "id": 1,
+  "name": "Ноутбук Pro 15",
+  "category_id": 1,
+  "price": 45000.0,
+  "quantity": 6,
+  "description": "Потужний робочий ноутбук"
+}
+
+GET /products
+  -> 200 OK
+[
+  {
+    "id": 1,
+    "name": "Ноутбук Pro 15",
+    "category_id": 1,
+    "price": 45000.0,
+    "quantity": 6,
+    "description": "Потужний робочий ноутбук"
+  },
+  {
+    "id": 2,
+    "name": "Бездротова миша",
+    "category_id": 1,
+    "price": 950.0,
+    "quantity": 25,
+    "description": "Ергономічна миша"
+  }
+]
+
+GET /products
+  -> 200 OK
+[
+  {
+    "id": 3,
+    "name": "Чистий код",
+    "category_id": 2,
+    "price": 800.0,
+    "quantity": 12,
+    "description": "Класика для розробників"
+  }
+]
+
+POST /categories
+  body: {"name": "Одяг"}
+  -> 201 Created
+{
+  "id": 3,
+  "name": "Одяг"
+}
+
+POST /products
+  body: {"name": "Клавіатура", "category_id": 1, "price": 1200, "quantity": 15, "description": "Механічна"}
+  -> 201 Created
+{
+  "id": 4,
+  "name": "Клавіатура",
+  "category_id": 1,
+  "price": 1200.0,
+  "quantity": 15,
+  "description": "Механічна"
+}
+
+PATCH /products/2
+  body: {"price": 899, "quantity": 30}
+  -> 200 OK
+{
+  "id": 2,
+  "name": "Бездротова миша",
+  "category_id": 1,
+  "price": 899.0,
+  "quantity": 30,
+  "description": "Ергономічна миша"
+}
+
+POST /products/1/purchase
+  body: {"quantity": 2}
+  -> 200 OK
+{
+  "product_id": 1,
+  "quantity": 2,
+  "total_price": 90000.0,
+  "remaining_quantity": 4
+}
+
+POST /products/1/purchase
+  body: {"quantity": 10}
+  -> 409 Conflict
+{
+  "detail": "Недостатньо товару на складі. Доступно: 4, запитано: 10",
+  "code": "insufficient_stock"
+}
+
+POST /products
+  body: {"name": "X", "category_id": 1, "price": -10, "quantity": 1}
+  -> 422 Unprocessable Entity
+{"detail": [{"type": "string_too_short", "loc": ["body", "name"], "msg": "String should have at least 2 characters", "input": "X", "ctx": {"min_length": 2}}, {"type": "greater_than", "loc": ["body", "price"], "msg": "Input should be greater than 0", "input": -10, "ctx": {"gt": 0.0}}]}
+
+GET /products/999
+  -> 404 Not Found
+{
+  "detail": "Товар 999 не знайдено",
+  "code": "product_not_found"
+}
+
+GET /categories/1/products
+  -> 200 OK
+[{"id": 1, "name": "Ноутбук Pro 15", "category_id": 1, "price": 45000.0, "quantity": 4, "description": "Потужний робочий ноутбук"}, {"id": 2, "name": "Бездротова миша", "category_id": 1, "price": 899.0, "quantity": 30, "description": "Ергономічна миша"}, {"id": 4, "name": "Клавіатура", "category_id": 1, "price": 1200.0, "quantity": 15, "description": "Механічна"}]
+
+GET /products/summary
+  -> 200 OK
+{
+  "products_count": 4,
+  "total_stock_value": 234570.0,
+  "most_expensive": {
+    "id": 1,
+    "name": "Ноутбук Pro 15",
+    "category_id": 1,
+    "price": 45000.0,
+    "quantity": 4,
+    "description": "Потужний робочий ноутбук"
+  }
+}
+
+POST /products/batch
+  body: {"product_ids": [3, 1, 2]}
+  -> 200 OK
+[{"id": 3, "name": "Чистий код", "category_id": 2, "price": 800.0, "quantity": 12, "description": "Класика для розробників"}, {"id": 1, "name": "Ноутбук Pro 15", "category_id": 1, "price": 45000.0, "quantity": 4, "description": "Потужний робочий ноутбук"}, {"id": 2, "name": "Бездротова миша", "category_id": 1, "price": 899.0, "quantity": 30, "description": "Ергономічна миша"}]
+
+POST /products/batch
+  body: {"product_ids": [1, 999]}
+  -> 404 Not Found
+{
+  "detail": "One of the products was not found"
+}
+
+DELETE /products/4
+  -> 204 No Content
+(empty)
+
+GET /products/4
+  -> 404 Not Found
+{
+  "detail": "Товар 4 не знайдено",
+  "code": "product_not_found"
+}
